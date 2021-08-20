@@ -6,8 +6,12 @@
   "scripts": {
     "test": "jest"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Chi Lee @ Almagest CMS",
+  "license": "GNU",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/almagestcms/currency"
+  },
   "dependencies": {
     "big.js": "^6.1.1"
   },
