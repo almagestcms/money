@@ -1,23 +1,36 @@
-const { createCurrency, RoundingMode } = require('./index');
+const { createMoney, RoundingMode } = require('./index');
 
-describe('Currency', () => {
+describe('Money', () => {
   test('Test basic construction', () => {
-    const USD = createCurrency();
-    expect(USD('123.5').toString()).toEqual('123.5');
+    const money = createMoney({
+      amount: '123.5',
+      currencyCode: 'USD',
+    });
+    expect(money.toString()).toEqual('123.5');
   });
 
   test('Test basic operation with rounding', () => {
-    const USD = createCurrency();
-    expect(USD('123.55').div(2).toString()).toEqual('61.78');
+    const money = createMoney({
+      amount: '123.55',
+      currencyCode: 'USD',
+    });
+    expect(money.div(2).toString()).toEqual('61.78');
   });
 
   test('Test zero decimal currency', () => {
-    const JPY = createCurrency({ code: 'JPY' });
-    expect(JPY('123').div(4).toString()).toEqual('31');
+    const money = createMoney({
+      amount: '123',
+      currencyCode: 'JPY',
+    });
+    expect(money.div(4).toString()).toEqual('31');
   });
   
   test('Test basic operation with round down', () => {
-    const USD = createCurrency({ roundingMode: RoundingMode.RoundDown });
-    expect(USD('123.55').div(2).toString()).toEqual('61.77');
+    const money = createMoney({
+      amount: '123.55',
+      currencyCode: 'USD',
+      roundingMode: RoundingMode.RoundDown,
+    });
+    expect(money.div(2).toString()).toEqual('61.77');
   });
 });

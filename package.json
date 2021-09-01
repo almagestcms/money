@@ -1,5 +1,5 @@
 {
-  "name": "@almagestcms/currency",
+  "name": "@almagestcms/money",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -10,7 +10,7 @@
   "license": "GNU",
   "repository": {
     "type": "git",
-    "url": "https://github.com/almagestcms/currency"
+    "url": "https://github.com/almagestcms/money"
   },
   "dependencies": {
     "big.js": "^6.1.1"

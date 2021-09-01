@@ -146,10 +146,93 @@ const currencyCodeToMinorUnits = exports.currencyCodeToMinorUnits = {
 };
 
 exports.createCurrency = ({ code = 'USD', roundingMode = RoundingMode.RoundHalfUp } = {}) => {
-  const minorUnits = currencyCodeToMinorUnits[code];
-  if (typeof minorUnits !== 'number') throw Error(`Currency (code: ${code}) is not supported.`);
-  const big = Big();
-  big.DP = minorUnits;
-  big.RM = roundingMode;
-  return big;
+};
+
+const money = Symbol('money');
+
+const createMoney = exports.createMoney = ({
+  amount = '0', // string or number or Big
+  currencyCode = 'USD',
+  roundingMode = RoundingMode.RoundHalfUp,
+}) => {
+  const getBig = (n) => {
+    const minorUnits = currencyCodeToMinorUnits[currencyCode];
+    if (typeof minorUnits !== 'number') throw Error(`Currency code (value: ${currencyCode}) is not supported.`);
+    const big = Big();
+    big.DP = minorUnits;
+    big.RM = roundingMode;
+    return big(n);
+  };
+  
+  const toBig = (n) => {
+    switch (true) {
+      case (typeof n === 'number'):
+      case (typeof n === 'string'):
+        return getBig(n);
+      case (typeof n === 'object' && n instanceof Big):
+        return n;
+      case (typeof n === 'object' && n[money]):
+        if (n.currencyCode !== currencyCode) throw new Error(`Currency codes do not match.`);
+        return n.toBig();
+      default:
+        throw new Error(`Input value must a number, a string, a Big object, or created using createMoney.`);
+    }
+  }
+
+  const value = getBig(amount);
+
+  const uniaryOps = ['abs', 'sqrt'];
+  const binaryOps = ['div', 'minus', 'mod', 'plus', 'times'];
+  const relationalOps = ['cmp', 'eq', 'gt', 'gte', 'lt', 'lte'];
+  const castingOps = ['toExponential', 'toFixed', 'toNumber', 'toPrecision', 'toString'];
+
+  const toString = () => JSON.stringify({ amount: value.toString(), currencyCode });
+
+  return new Proxy(
+    {
+      [money]: true,
+      [Symbol.toStringTag]: () => toString(),
+      [Symbol.toPrimitive]: (hint) => {
+        if (hint === 'number') return value.toNumber();
+        else if (hint === 'string') return toString();
+        else return toString();
+      },
+      currencyCode,
+    },
+    {
+      get: function (target, prop) {
+        switch (true) {
+          case uniaryOps.includes(prop):
+            return () => createMoney({
+              amount: value[prop](),
+              currencyCode,
+              roundingMode,
+            });
+          case binaryOps.includes(prop):
+            return (n) => createMoney({
+              amount: value[prop](toBig(n)),
+              currencyCode,
+              roundingMode,
+            });
+          case relationalOps.includes(prop):
+            return n => value[prop](toBig(n));
+          case castingOps.includes(prop):
+            return (...args) => value[prop](...args);
+          case prop === 'pow':
+            return (n) => createMoney({
+              amount: value[prop](n),
+              currencyCode,
+              roundingMode
+            });
+          case prop === 'toJSON':
+            return () => ({
+              amount: value.toString(),
+              currencyCode,
+            });
+          default:
+            return Reflect.get(...arguments);
+        }
+      }
+    }
+  );
 };
