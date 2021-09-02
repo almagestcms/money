@@ -197,6 +197,9 @@ const createMoney = exports.createMoney = ({
         else if (hint === 'string') return toString();
         else return toString();
       },
+      get amount() {
+        return value.toString();
+      },
       currencyCode,
     },
     {
