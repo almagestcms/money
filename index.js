@@ -148,7 +148,7 @@ const currencyCodeToMinorUnits = exports.currencyCodeToMinorUnits = {
 exports.createCurrency = ({ code = 'USD', roundingMode = RoundingMode.RoundHalfUp } = {}) => {
 };
 
-const money = Symbol('money');
+const money = exports.money = Symbol('money');
 
 const createMoney = exports.createMoney = ({
   amount = '0', // string or number or Big
@@ -232,6 +232,8 @@ const createMoney = exports.createMoney = ({
               amount: value.toString(),
               currencyCode,
             });
+          case prop === 'toBig':
+            return () => toBig(value);
           default:
             return Reflect.get(...arguments);
         }
